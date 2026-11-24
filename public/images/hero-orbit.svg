@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <!-- Hero background motif: the logo's tilted orbit (ellipse at -25 degrees)
+       with its orange dot, scaled up. Kept faint on purpose (white strokes at
+       5-7% opacity) so the white hero text stays fully readable on navy. -->
+  <g transform="rotate(-25 1150 450)" fill="none" stroke="#FFFFFF" stroke-width="3">
+    <ellipse cx="1150" cy="450" rx="620" ry="250" stroke-opacity="0.07"/>
+    <ellipse cx="1150" cy="450" rx="430" ry="170" stroke-opacity="0.05"/>
+  </g>
+  <!-- Point on the outer orbit (parameter -40 degrees, rotated with it) -->
+  <circle cx="1513" cy="104" r="14" fill="#F26B1D" fill-opacity="0.4"/>
+</svg>

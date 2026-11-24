@@ -1,0 +1,11 @@
+# Text that must never appear on madebysadegh.work. The check fails on any hit.
+#
+# Home street: the business runs from home and showStreetAddress is false, so
+# the street name must never leak into copy, alt text, meta tags or images.
+Wavecrest
+# Old company name: kept out so the new brand starts clean.
+Nick's Electronic
+Nicks Electronic
+#
+# Client names (Tru Lawns, Southern and Sons, Luke's) are deliberately NOT
+# listed: unlike a normal client repo, this site's portfolio names them.
