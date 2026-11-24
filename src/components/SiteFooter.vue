@@ -1,7 +1,7 @@
 <script>
 import SITE from '@site-config'
 import { splitEmail } from '@/utils/format'
-import { licensingClaim, licenseNumberText, enteredLink, socialLinks } from '@/utils/site'
+import { licensingClaim, licenseNumberText, enteredLink, socialLinks, asset } from '@/utils/site'
 
 /**
  * Footer, laid out like the reference site's Footer: three columns
@@ -46,6 +46,14 @@ export default {
     },
     year () {
       return new Date().getFullYear()
+    },
+    // Optional logo above the business name: { src, alt? }. Missing or
+    // without src: no image, exactly as before. Should be a version made
+    // for dark backgrounds, since the footer is the primary colour.
+    footerLogo () {
+      const logo = this.site.footerLogo
+      if (!logo || !logo.src) return null
+      return { src: asset(logo.src), alt: logo.alt || '' }
     }
   }
 }
@@ -78,6 +86,13 @@ export default {
   .footer__grid {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.footer__logo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 0 16px;
 }
 
 .footer__name {
@@ -205,6 +220,19 @@ a.footer__contact:focus-visible span:last-child {
       <div class="footer__grid">
         <!-- Business name, trust line, short description -->
         <div>
+          <!-- Optional (site.footerLogo). alt defaults to empty: the business
+               name is printed right below, so a screen reader would
+               otherwise hear it twice. -->
+          <img
+            v-if="footerLogo"
+            class="footer__logo"
+            :src="footerLogo.src"
+            :alt="footerLogo.alt"
+            width="96"
+            height="96"
+            loading="lazy"
+            decoding="async"
+          >
           <p class="footer__name">{{ site.businessName }}</p>
           <p class="footer__trust">{{ trustLine }}</p>
           <p v-if="licenseText">{{ licenseText }}</p>

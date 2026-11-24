@@ -34,6 +34,15 @@ export default {
     imageSize () {
       return this.site.galleryImageSize || { width: 1200, height: 900 }
     },
+    // Optional section wording (site.gallery.title / .lead). Without it the
+    // section reads exactly as before, so existing client sites don't change.
+    title () {
+      return (this.site.gallery && this.site.gallery.title) || 'Recent Projects'
+    },
+    lead () {
+      return (this.site.gallery && this.site.gallery.lead) ||
+        'Drag the slider (or use the arrow keys) to compare before and after.'
+    },
     // Announced politely to screen readers after a filter change
     resultText () {
       const count = this.visibleProjects.length
@@ -43,7 +52,13 @@ export default {
   },
 
   methods: {
-    asset
+    asset,
+    // A project with both a url and an image is a portfolio entry: a linked
+    // screenshot of a live site instead of a before/after slider. Projects
+    // without them render as sliders, as they always have.
+    isLinkCard (project) {
+      return !!(project.url && project.image)
+    }
   }
 }
 </script>
@@ -85,13 +100,69 @@ export default {
   color: var(--color-accent-text);
 }
 
+/* ---- Portfolio cards (projects with url + image) ----
+   Same frame, radius and caption spacing as the before/after slider, so the
+   two kinds of card sit together in one grid. */
+.link-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.link-card__shot {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background-color: var(--color-background);
+}
+
+.link-card__shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.3s ease;
+}
+
+.link-card__shot:hover img {
+  transform: scale(1.02);
+}
+
+.link-card__caption {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.link-card__title {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.link-card__description {
+  margin: 8px 0 14px;
+  color: var(--color-muted);
+}
+
+/* Pushed to the bottom so buttons line up across cards of different length */
+.link-card__visit {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
 </style>
 
 <template>
   <section id="projects" class="section" aria-labelledby="projects-title">
     <div class="container-narrow">
-      <h2 id="projects-title" class="section-title">Recent Projects</h2>
-      <p class="section-lead">Drag the slider (or use the arrow keys) to compare before and after.</p>
+      <h2 id="projects-title" class="section-title">{{ title }}</h2>
+      <p class="section-lead">{{ lead }}</p>
 
       <div v-if="categories.length > 1" class="filters" role="group" aria-label="Filter projects by category">
         <button
@@ -118,7 +189,47 @@ export default {
           :key="`${activeCategory}-${index}-${project.title}`"
           class="card project"
         >
+          <!-- Portfolio entry: screenshot plus a "Visit site" link that
+               opens in a new tab. The screenshot is clickable for mouse
+               users but left out of the tab order (tabindex -1, hidden from
+               screen readers), so keyboard and screen-reader users meet one
+               clearly named link per project, not two. -->
+          <figure v-if="isLinkCard(project)" class="link-card">
+            <a
+              class="link-card__shot"
+              :href="project.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <img
+                :src="asset(project.image)"
+                :alt="project.alt || project.title"
+                :width="project.width || imageSize.width"
+                :height="project.height || imageSize.height"
+                loading="lazy"
+                decoding="async"
+              >
+            </a>
+            <figcaption class="link-card__caption">
+              <p class="link-card__title">{{ project.title }}</p>
+              <span class="category">{{ project.category }}</span>
+              <p v-if="project.description" class="link-card__description">{{ project.description }}</p>
+              <a
+                class="btn btn--outline link-card__visit"
+                :href="project.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visit site
+                <span class="mdi mdi-open-in-new" aria-hidden="true"></span>
+                <span class="sr-only">: {{ project.title }} (opens in a new tab)</span>
+              </a>
+            </figcaption>
+          </figure>
           <BeforeAfterSlider
+            v-else
             :title="project.title"
             :before="asset(project.beforeSrc)"
             :after="asset(project.afterSrc)"

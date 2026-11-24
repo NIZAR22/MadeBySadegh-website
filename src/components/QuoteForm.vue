@@ -134,7 +134,22 @@ export default {
     },
     submitLabel () {
       if (!this.connected) return 'Online quotes coming soon'
-      return this.sending ? 'Sending…' : 'Request My Free Quote'
+      return this.sending ? 'Sending…' : (this.q.submitLabel || 'Request My Free Quote')
+    },
+    // Optional wording overrides from quoteForm (title, sizeLabel,
+    // comingSoonText; submitLabel is used above). Missing keys keep the
+    // template's quote wording, so existing client sites don't change.
+    formTitle () {
+      return this.q.title || 'Get a Free Quote'
+    },
+    // "(optional)" is added here, like on the form's other optional fields
+    sizeFieldLabel () {
+      return `${this.q.sizeLabel || 'Project size'} (optional)`
+    },
+    // Replaces the whole first sentence of the coming-soon notice
+    comingSoonText () {
+      return this.q.comingSoonText ||
+        `Online quotes are coming soon — ${this.reachVerb} ${this.site.phoneDisplay} and we'll get right back to you.`
     }
   },
 
@@ -519,7 +534,7 @@ export default {
 <template>
   <section id="quote" class="section section--surface" aria-labelledby="quote-title">
     <div class="container-narrow">
-      <h2 id="quote-title" class="section-title">Get a Free Quote</h2>
+      <h2 id="quote-title" class="section-title">{{ formTitle }}</h2>
       <p class="section-lead">
         Tell us about your project and we'll get back to you. Prefer to talk?
         Call <a class="text-link" :href="site.phoneHref">{{ site.phoneDisplay }}</a>.
@@ -575,10 +590,7 @@ export default {
             role="status"
             tabindex="-1"
           >
-            <p class="notice__text">
-              Online quotes are coming soon — {{ reachVerb }}
-              {{ site.phoneDisplay }} and we'll get right back to you.
-            </p>
+            <p class="notice__text">{{ comingSoonText }}</p>
             <div class="notice__actions">
               <a class="btn btn--primary" :href="site.phoneHref">
                 <span class="mdi mdi-phone" aria-hidden="true"></span>
@@ -667,7 +679,7 @@ export default {
               v-if="q.projectSizes && q.projectSizes.length"
               v-model="form.projectSize"
               :items="q.projectSizes"
-              label="Project size (optional)"
+              :label="sizeFieldLabel"
               outlined
               clearable
               :menu-props="{ offsetY: true }"

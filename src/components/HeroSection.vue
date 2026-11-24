@@ -2,6 +2,18 @@
 import SITE from '@site-config'
 import { trustItems, smsLink, moduleOn, asset } from '@/utils/site'
 
+/**
+ * A hero button override from config, or null when it's missing or
+ * incomplete (so a half-filled value falls back to the default buttons
+ * rather than rendering an empty or dead button)
+ * @param {*} cta - { label, href, icon? }
+ * @returns {{ label: string, href: string, icon: string }|null}
+ */
+function validCta (cta) {
+  if (!cta || !cta.label || !cta.href) return null
+  return { label: cta.label, href: cta.href, icon: cta.icon || '' }
+}
+
 export default {
   name: 'HeroSection',
 
@@ -23,6 +35,25 @@ export default {
     },
     image () {
       return asset(this.site.hero.image)
+    },
+    // Optional decorative layer (site.hero.pattern), e.g. a faint motif from
+    // the logo. The asset itself should be subtle (low opacity strokes): the
+    // component only positions it behind the text.
+    pattern () {
+      return asset(this.site.hero.pattern)
+    },
+    // Optional button overrides. Each is { label, href, icon? }; a value
+    // without both label and href counts as missing.
+    //   primaryCta   replaces the "Get a Free Quote" button
+    //   secondaryCta replaces the Call / Text buttons, for a two-button hero
+    //                (the floating call button, drawer and contact section
+    //                still offer calling and texting)
+    // Both missing: the buttons are exactly as before.
+    primaryCta () {
+      return validCta(this.site.hero.primaryCta)
+    },
+    secondaryCta () {
+      return validCta(this.site.hero.secondaryCta)
     }
   }
 }
@@ -57,6 +88,17 @@ export default {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+/* Decorative pattern (hero.pattern): fills the section behind the text and
+   never catches clicks */
+.hero__pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .hero__content {
@@ -127,7 +169,17 @@ export default {
       fetchpriority="high"
       decoding="async"
     >
-    <div class="hero__overlay" aria-hidden="true"></div>
+    <!-- The overlay only darkens a photo. Without one, the section's primary
+         colour shows as-is (it would otherwise turn navy into near-black). -->
+    <div v-if="image" class="hero__overlay" aria-hidden="true"></div>
+    <img
+      v-if="pattern"
+      class="hero__pattern"
+      :src="pattern"
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+    >
 
     <div class="container-narrow hero__content">
       <h1 id="hero-title" class="hero__title">{{ site.hero.h1 }}</h1>
@@ -138,18 +190,28 @@ export default {
       </ul>
 
       <div class="hero__actions">
-        <a v-if="quoteOn" class="btn btn--accent btn--lg" href="#quote">
+        <a v-if="primaryCta" class="btn btn--accent btn--lg hero__cta--primary" :href="primaryCta.href">
+          <span v-if="primaryCta.icon" :class="['mdi', primaryCta.icon]" aria-hidden="true"></span>
+          {{ primaryCta.label }}
+        </a>
+        <a v-else-if="quoteOn" class="btn btn--accent btn--lg" href="#quote">
           <span class="mdi mdi-clipboard-text-outline" aria-hidden="true"></span>
           Get a Free Quote
         </a>
-        <a class="btn btn--outline-light btn--lg" :href="site.phoneHref">
-          <span class="mdi mdi-phone" aria-hidden="true"></span>
-          Call {{ site.phoneDisplay }}
+        <a v-if="secondaryCta" class="btn btn--outline-light btn--lg hero__cta--secondary" :href="secondaryCta.href">
+          <span v-if="secondaryCta.icon" :class="['mdi', secondaryCta.icon]" aria-hidden="true"></span>
+          {{ secondaryCta.label }}
         </a>
-        <a v-if="smsHref" class="btn btn--outline-light btn--lg" :href="smsHref">
-          <span class="mdi mdi-message-text-outline" aria-hidden="true"></span>
-          Text Us
-        </a>
+        <template v-else>
+          <a class="btn btn--outline-light btn--lg" :href="site.phoneHref">
+            <span class="mdi mdi-phone" aria-hidden="true"></span>
+            Call {{ site.phoneDisplay }}
+          </a>
+          <a v-if="smsHref" class="btn btn--outline-light btn--lg" :href="smsHref">
+            <span class="mdi mdi-message-text-outline" aria-hidden="true"></span>
+            Text Us
+          </a>
+        </template>
       </div>
     </div>
   </section>
