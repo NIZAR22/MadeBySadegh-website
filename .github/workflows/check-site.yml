@@ -1,0 +1,38 @@
+# Runs on every push and pull request: lint, unit tests and the leftover
+# check (scripts/check-site.ps1). Catches unfinished placeholders, another
+# client's details, licensing words an unlicensed business can't use and
+# low-contrast theme colours before anything goes live.
+#
+# In client repos, unfinished TODO/PLACEHOLDER markers are warnings while
+# launchReady is false (preview) and failures once it's true (launch). In the
+# template repo itself (nizar-starter-site) the markers are expected, so the
+# marker check is skipped there; every other check still runs.
+name: Check site
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # Actions are pinned to commit hashes so a moved tag can't change what runs
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:unit
+
+      # PowerShell 7 (pwsh) is preinstalled on GitHub's Ubuntu runners
+      - name: Leftover-content check
+        shell: pwsh
+        run: ./scripts/check-site.ps1 ${{ github.event.repository.name == 'nizar-starter-site' && '-AllowMarkers' || '' }}

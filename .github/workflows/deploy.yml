@@ -1,0 +1,79 @@
+# Builds the site and publishes it with the official GitHub Pages actions on
+# every push to main. No gh-pages branch: the build is uploaded as a Pages
+# artifact and deployed directly.
+#
+# One-time setup per client repo: Settings > Pages > Build and deployment >
+# Source: "GitHub Actions".
+#
+# Lint, unit tests and the leftover check (no -AllowMarkers) gate the deploy.
+# Another client's details, a restricted word on an unlicensed site, a CNAME
+# mismatch or a failing contrast pair never goes live. Unfinished TODO /
+# PLACEHOLDER values depend on launchReady in site-config.js:
+#   false (preview): reported as warnings, and the site deploys with noindex
+#                    so the client can review it without Google indexing it
+#   true  (launch):  failures, and the build also refuses unfinished
+#                    quote-form keys (vue.config.js)
+#
+# Skipped entirely in the template repo (nizar-starter-site): it's private,
+# full of placeholders on purpose, and not meant to be published.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; a newer push waits rather than cancelling a deploy
+# that's halfway out
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event.repository.name != 'nizar-starter-site'
+    runs-on: ubuntu-latest
+    steps:
+      # Actions are pinned to commit hashes so a moved tag can't change what runs
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:unit
+
+      # Strictness follows launchReady (the script prints PREVIEW or LAUNCH)
+      - name: Leftover-content check
+        shell: pwsh
+        run: ./scripts/check-site.ps1
+
+      # Paths are relative (publicPath './' in vue.config.js), so the same
+      # build works at /<Repo-name>/ and on a custom domain
+      - run: npm run build
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only this job can publish: Pages needs these two permissions
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!--
+      Every value in this file comes from site-config.js through
+      build/site-build.js (htmlWebpackPlugin.options.page), already
+      HTML-escaped. Nothing client-specific is typed here.
+    -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!-- Brand colour for the browser address bar on phones -->
+    <meta name="theme-color" content="<%= htmlWebpackPlugin.options.page.themeColor %>">
+    <!-- Title and description: what search results show -->
+    <title><%= htmlWebpackPlugin.options.page.title %></title>
+    <meta name="description" content="<%= htmlWebpackPlugin.options.page.description %>">
+    <!-- The one official address of this page for search engines -->
+    <link rel="canonical" href="<%= htmlWebpackPlugin.options.page.url %>">
+    <% if (htmlWebpackPlugin.options.page.robots) { %>
+    <!-- Preview build (launchReady is false in site-config.js): keep this
+         unfinished site out of search results until it's launched -->
+    <meta name="robots" content="<%= htmlWebpackPlugin.options.page.robots %>">
+    <% } %>
+
+    <!--
+      Theme colours and fonts as CSS custom properties, inlined so the first
+      paint already has the client's look (src/styles/theme.css holds neutral
+      fallbacks that this overrides)
+    -->
+    <style><%= htmlWebpackPlugin.options.page.themeCss %></style>
+
+    <!-- Icons for browser tabs and phone home screens -->
+    <link rel="icon" href="<%= BASE_URL %>favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="<%= BASE_URL %>apple-touch-icon.png">
+
+    <!-- Link previews on Facebook, in text messages and on other sites -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="<%= htmlWebpackPlugin.options.page.siteName %>">
+    <meta property="og:title" content="<%= htmlWebpackPlugin.options.page.title %>">
+    <meta property="og:description" content="<%= htmlWebpackPlugin.options.page.description %>">
+    <meta property="og:url" content="<%= htmlWebpackPlugin.options.page.url %>">
+    <meta property="og:image" content="<%= htmlWebpackPlugin.options.page.ogImage %>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <% if (htmlWebpackPlugin.options.page.structuredData) { %>
+    <!-- Business details for search engines (Schema.org); launched sites only -->
+    <script type="application/ld+json"><%= htmlWebpackPlugin.options.page.structuredData %></script>
+    <% } %>
+
+    <!--
+      Fonts and icons load without blocking the first paint
+      (media="print" then switching to "all" once loaded is the standard
+      trick); text shows in the fallback font meanwhile. The <noscript>
+      copies cover visitors without JavaScript.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.page.fontsUrl %>" media="print" onload="this.media='all'">
+    <!-- Icon font pinned to one version; the browser refuses the file if its contents ever change -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" integrity="sha384-HphS8cQyN+eYiJ5PMbzShG6qZdRtvHPVLPkYb8JwMkmNgaIxrFVDhQe3jIbq3EZ2" crossorigin="anonymous" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.page.fontsUrl %>">
+    </noscript>
+
+    <% if (htmlWebpackPlugin.options.page.analyticsId) { %>
+    <!-- Google Analytics 4, only when site-config.js sets analyticsId -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= htmlWebpackPlugin.options.page.analyticsId %>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<%= htmlWebpackPlugin.options.page.analyticsId %>');
+    </script>
+    <% } %>
+  </head>
+  <body>
+    <!--
+      Shown only when JavaScript is off: the key details, for visitors and
+      for crawlers that don't run JavaScript
+    -->
+    <noscript>
+      <h1><%= htmlWebpackPlugin.options.page.noscript.h1 %></h1>
+      <p><%= htmlWebpackPlugin.options.page.noscript.sub %></p>
+      <p><%= htmlWebpackPlugin.options.page.noscript.area %></p>
+      <p>Call <a href="<%= htmlWebpackPlugin.options.page.noscript.phoneHref %>"><%= htmlWebpackPlugin.options.page.noscript.phoneDisplay %></a> for a free quote from <%= htmlWebpackPlugin.options.page.noscript.name %>.</p>
+    </noscript>
+    <div id="app"></div>
+  </body>
+</html>
