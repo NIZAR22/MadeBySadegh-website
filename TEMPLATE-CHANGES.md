@@ -32,6 +32,13 @@ None of them read anything specific to this site.
 | QuoteForm.vue | `quoteForm.comingSoonText` | "Online quotes are coming soon — call or text (phone) and we'll get right back to you." | Replaces that sentence in the preview notice. The notice's Call/Text buttons stay. | Mention email, or other wording |
 | SiteFooter.vue | `footerLogo` `{ src, alt? }` | No image in the footer | 96×96 image above the business name in the first column. `alt` defaults to `''` because the name is printed right below it. Use a version of the logo made for dark backgrounds. | Brand badge in the footer |
 
+## Template bug found (not fixed here)
+
+`scripts/check-site.ps1`, `Get-Lines`: `return $lineCache[$path]` unrolls a one-element array, so for a **one-line file** the caller gets a string and `$lines[$i]` is a single character. Result: the blocklist loop crashes (`[System.Char] does not contain a method named 'IndexOf'`), and the marker and restricted-word scans silently check only the first character of the file. Minified one-line SVGs (most logo exports) trigger it.
+
+- Workaround used here: the three one-line SVGs in `public/` were split onto several lines (drawing unchanged).
+- Fix for the template: `return ,$lineCache[$path]` (the comma keeps the array), plus a check-site test with a one-line SVG that contains a blocklisted word.
+
 ## Not changed, possible later
 
 - **Manifest and extra icon links** (`site.webmanifest` with a 512 px icon, `favicon-32.png`): would need `<link>` tags in `public/index.html`. This site puts `favicon.ico` at the root, where browsers find it without a tag.
