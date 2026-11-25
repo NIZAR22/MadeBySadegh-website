@@ -8,6 +8,7 @@ import PhotoPicker from './PhotoPicker.vue'
 import { formatPhoneInput } from '@/utils/format'
 import { requestBytes } from '@/utils/photos'
 import { isFilled, emailjsKeysFilled, photoMode, smsLink } from '@/utils/site'
+import { emptyQuoteForm, detailsHtml, submittedAt } from '@/utils/quoteEmail'
 
 // How long to wait for Google's reCAPTCHA widget before saying it didn't load
 const CAPTCHA_LOAD_TIMEOUT = 15000
@@ -18,26 +19,10 @@ const RECAPTCHA_TEST_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
 // well inside EmailJS's request limit alongside photos
 const MESSAGE_MAX = 1000
 
-/**
- * Empty form values. A function so every reset gets fresh objects.
- * @returns {object}
- */
-function emptyForm () {
-  return {
-    name: '',
-    phone: '',
-    email: '',
-    contactMethod: 'Call',
-    city: '',
-    address: '',
-    projectType: '',
-    projectSize: '',
-    timeline: '',
-    message: '',
-    // Honeypot: hidden from people, but bots that fill every field fill it
-    website: ''
-  }
-}
+// Empty form values come from QUOTE_FIELDS (utils/quoteEmail.js), the same
+// list the email's details table is built from. A function so every reset
+// gets a fresh object.
+const emptyForm = emptyQuoteForm
 
 export default {
   name: 'QuoteForm',
@@ -238,6 +223,15 @@ export default {
         timeline: f.timeline || 'Not given',
         message: f.message.trim() || 'No details given',
         photo_count: String(this.photos.length),
+        // Added for templates that lay the email out themselves: the phone
+        // under a shorter name, when and where the request was sent, and
+        // every other filled field as a ready-made, escaped HTML table
+        // (insert it with triple braces: {{{details_html}}}). Templates that
+        // use the params above are unaffected.
+        phone: f.phone,
+        submitted_at: submittedAt(new Date()),
+        page_url: window.location.href,
+        details_html: detailsHtml(f, this.site),
         'g-recaptcha-response': this.recaptchaResponse
       }
       // Photos as Base64 data URLs: EmailJS "variable attachments" named

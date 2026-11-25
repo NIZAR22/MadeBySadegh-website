@@ -101,6 +101,23 @@ describe('QuoteForm.vue', () => {
       )
     })
 
+    it('also sends phone, submitted_at, page_url and the escaped details table', async () => {
+      const wrapper = mountForm()
+      await fillAndTick(wrapper, { message: 'Fix <this> & that' })
+      await submit(wrapper)
+
+      const params = emailjs.send.mock.calls[0][2]
+      expect(params.reply_to).toBe('test@example.com')
+      expect(params.phone).toBe('(555) 010-0123')
+      expect(params.project_type).toBe('Flooring')
+      expect(params.submitted_at).toMatch(/^[A-Z][a-z]{2} \d{1,2}, \d{4} \d{1,2}:\d{2} [AP]M ET$/)
+      expect(params.page_url).toBe(window.location.href)
+      expect(params.details_html).toContain('Fix &lt;this&gt; &amp; that')
+      expect(params.details_html).toContain('Riverton')
+      // empty fields are left out of the table
+      expect(params.details_html).not.toContain('Street address')
+    })
+
     it('shows the success message with the phone number as a backup', async () => {
       const wrapper = mountForm()
       await fillAndTick(wrapper)

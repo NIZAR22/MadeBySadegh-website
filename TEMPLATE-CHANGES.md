@@ -10,7 +10,10 @@ All of these are tested both ways (key present / key missing) in `tests/unit/com
 - `src/components/HeroSection.vue`
 - `src/components/QuoteForm.vue`
 - `src/components/SiteFooter.vue`
+- `src/utils/quoteEmail.js` (new)
 - `tests/unit/components/OptionalKeys.spec.js` (new)
+- `tests/unit/utils/quoteEmail.spec.js` (new)
+- `tests/unit/components/QuoteForm.spec.js` (one test added)
 
 None of them read anything specific to this site.
 
@@ -31,6 +34,19 @@ None of them read anything specific to this site.
 | QuoteForm.vue | `quoteForm.sizeLabel` | "Project size" | Label of the `projectSizes` field. " (optional)" is always appended, as on the other optional fields. The EmailJS variable is still `project_size`. | Use the field for budget |
 | QuoteForm.vue | `quoteForm.comingSoonText` | "Online quotes are coming soon — call or text (phone) and we'll get right back to you." | Replaces that sentence in the preview notice. The notice's Call/Text buttons stay. | Mention email, or other wording |
 | SiteFooter.vue | `footerLogo` `{ src, alt? }` | No image in the footer | 96×96 image above the business name in the first column. `alt` defaults to `''` because the name is printed right below it. Use a version of the logo made for dark backgrounds. | Brand badge in the footer |
+
+## Extra EmailJS params (QuoteForm.vue + `src/utils/quoteEmail.js`)
+
+Not a config key: the form now sends four more params **in addition to** the existing ones (`phone_number`, `preferred_contact`, `city`, `address`, `project_size`, `timeline`, `message`, … are all still sent, unchanged), so existing client templates keep working.
+
+| Param | Value |
+|---|---|
+| `phone` | Same as `phone_number` |
+| `submitted_at` | Send time in Eastern time, e.g. `Nov 25, 2026 3:42 PM ET` (DST-aware). The zone is a default argument of `submittedAt()`; make it a config key if a client outside ET ever needs it. |
+| `page_url` | `window.location.href` |
+| `details_html` | An inline-styled HTML table of every **filled** field that has no param of its own (name, phone, email and project type do). Every value and label is HTML-escaped and line breaks become `<br>`, because the template inserts it with triple braces: `{{{details_html}}}`. |
+
+The table is built from `QUOTE_FIELDS` in `quoteEmail.js`, which is also where the form's empty values now come from. To add a form field: add its entry there and its input in `QuoteForm.vue`; it then appears in the email with no template change.
 
 ## Template bug found (not fixed here)
 
