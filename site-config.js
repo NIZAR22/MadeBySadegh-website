@@ -328,12 +328,13 @@ const SITE = {
     // JavaScript anyway (that's how EmailJS works), so they live here rather
     // than in secrets. SETUP.md explains how to create them; a production
     // build stops if any still contains a to-do marker.
-    // reCAPTCHA: the shared nizar22.github.io key won't cover madebysadegh.work;
-    // add the domain to it or make a new v2 key (SETUP.md 1.4).
-    emailjsPublicKey: 'TODO EmailJS public key',
-    emailjsServiceId: 'TODO EmailJS service ID',
-    emailjsTemplateId: 'TODO EmailJS template ID',
-    recaptchaSiteKey: 'TODO reCAPTCHA v2 site key',
+    // The template is the NOTIFICATION template; its Auto-Reply tab sends
+    // the customer's copy. The reCAPTCHA secret lives in EmailJS's template
+    // settings, never here.
+    emailjsPublicKey: 'FS7lqVI1sl8Q6eRg3',
+    emailjsServiceId: 'service_n9f7nb9',
+    emailjsTemplateId: 'template_xpfki8n',
+    recaptchaSiteKey: '6LdLhDEuAAAAAM6X9WoTRZ6lS0lo41IZ92gLkPJv',
     projectTypes: [
       'New Website',
       'Website Redesign',
